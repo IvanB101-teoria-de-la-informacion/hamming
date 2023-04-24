@@ -3,3 +3,5 @@ build/**
 *.HA*
 *.HE*
 .bashrc
+/Graphic/nbproject/private/
+/Graphic/build/
