@@ -1,38 +1,66 @@
 mod ext;
 
-use ext::Extention;
+slint::include_modules!();
+
+use ext::FfiError;
+use rfd::FileDialog;
 
 fn main() {
-    let path = String::from("test/Primero.txt");
-    /*
-    print!("Encode: ");
-    match ext::encode(path.clone(), 32) {
-        Ok(()) => println!("Success"),
-        Err(err) => println!("{}", err.message),
-    };
+    let main_window = MainWindow::new().unwrap();
 
-    print!("Corrupt: ");
-    match ext::corrupt(path.clone().with_extention("HA1")) {
-        Ok(()) => println!("Success"),
-        Err(err) => println!("{}", err.message),
-    };
+    main_window.on_choose_file(move |operation| {
+        let valid_extentions: Vec<&str>;
 
-    print!("Decode: ");
-    match ext::decode(path.clone().with_extention("HE1"), false) {
-        Ok(()) => println!("Success"),
-        Err(err) => println!("{}", err.message),
-    };
-    */
+        match operation.as_str() {
+            "hamming" => {
+                valid_extentions = ["txt"].into();
+            }
+            "dehamming" => {
+                valid_extentions = ["HA1", "HA2", "HA3", "HE1", "HE2", "HE3"].into();
+            }
+            "corrupt" => {
+                valid_extentions = ["HA1", "HA2", "HA3"].into();
+            }
+            "huffman" => {
+                valid_extentions = ["txt", "doc", "docx"].into();
+            }
+            "dehuffman" => {
+                valid_extentions = ["huf"].into();
+            }
+            _ => {
+                valid_extentions = Vec::new();
+            }
+        }
 
-    print!("Compress: ");
-    match ext::compress(path.clone().with_extention("txt")) {
-        Ok(()) => println!("Success"),
-        Err(err) => println!("{}", err.message),
-    };
+        let path = match FileDialog::new()
+            .add_filter("", valid_extentions.as_ref())
+            .set_directory(".")
+            .pick_file()
+        {
+            Some(path) => path,
+            None => return,
+        };
 
-    print!("Decompress: ");
-    match ext::decompress(path.clone().with_extention("huf")) {
-        Ok(()) => println!("Success"),
-        Err(err) => println!("{}", err.message),
-    };
+        let file_name = path.as_path().to_str().unwrap().to_string();
+
+        let error = match operation.as_str() {
+            "hamming" => ext::encode(file_name.to_owned(), 32),
+            "dehamming" => ext::decode(file_name.to_owned(), true),
+            "corrupt" => ext::corrupt(file_name.to_owned(), 0.50),
+            "huffman" => ext::compress(file_name.to_owned()),
+            "dehuffman" => ext::decompress(file_name.to_owned()),
+            _ => Err(FfiError {
+                message: "Invalid Operation".to_string(),
+            }),
+        };
+
+        match error {
+            Ok(_) => {}
+            Err(e) => {
+                println!("Error: {}", e);
+            }
+        }
+    });
+
+    main_window.run().unwrap();
 }
