@@ -9,20 +9,8 @@
 #include <stdio.h>
 
 int main() {
-  buffered_reader reader;
-  init_buffered_reader(&reader, "./todo.txt");
-
-  buffered_writer writer;
-  init_buffered_writer(&writer, "./todo.huf");
-
-  bit_slice slice = read(&reader, 32);
-  while (slice.base != NULL) {
-    put_slice(&writer, slice);
-    slice = read(&reader, 32);
-  }
-
-  free_buffered_reader(&reader);
-  free_buffered_writer(&writer);
+  encode("../../../test/todo.txt", "../../../test/todo.HA1", 32, 5);
+  decode("../../../test/todo.HA1", "../../../test/todo.DC1", 32, 5, 1);
 
   return 0;
 }

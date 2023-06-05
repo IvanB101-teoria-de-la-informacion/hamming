@@ -1,6 +1,7 @@
 #include "hamming.h"
 
 #include "../bitarr/bitarr.h"
+#include "../buffer/buffer.h"
 
 #include <errno.h>
 #include <stdint.h>
@@ -8,61 +9,45 @@
 #include <stdlib.h>
 #include <string.h>
 
-int pack(void *buffer, void *block, uint32_t block_size, uint32_t buff_offset);
+void pack(buffered_reader *br, void *block, uint32_t block_size);
 
 void protect(void *block, uint32_t block_size_bytes, uint32_t exponent,
              void *masks);
 
 char *encode(char *path, char *dest, uint64_t block_size, uint64_t exponent) {
-  FILE *fd, *res;
+  buffered_reader reader;
+  buffered_writer writer;
 
-  fd = fopen(path, "rb");
-  if (!fd) {
+  init_buffered_reader(&reader, path);
+  if (!reader.file) {
     return strerror(errno);
   }
-  res = fopen(dest, "wb");
-  if (!res) {
-    return strerror(errno);
-  }
+  init_buffered_writer(&writer, dest);
 
   void *masks = init_masks();
 
   uint32_t info_bits, buff_offset, block_size_bytes = block_size / 8;
-  uint64_t file_size, n_blocks;
-
-  fseek(fd, 0L, SEEK_END);
-  file_size = ftell(fd);
-  rewind(fd);
+  uint64_t n_blocks;
 
   info_bits = block_size - exponent - 1;
-  n_blocks = file_size * 8 / info_bits;
-  if (file_size * 8 % info_bits) {
+  n_blocks = reader.file_size / info_bits;
+  if (reader.file_size % info_bits) {
     n_blocks++;
   }
 
-  void *buffer = malloc(file_size + block_size_bytes),
-       *result = malloc(n_blocks * block_size_bytes);
+  put_bytes(&writer, (uint8_t *)&n_blocks, sizeof(uint64_t));
+  put_bytes(&writer, (uint8_t *)&reader.file_size, sizeof(uint64_t));
 
-  fread(buffer, 1, file_size, fd);
+  for (int i = 0; i < n_blocks; i++) {
+    void *block = take_slice(&writer, block_size_bytes).base;
 
-  for (int i = 0, buff_offset = 0; i < n_blocks; i++) {
-    void *block = (void *)(result + i * block_size_bytes);
-
-    buff_offset = pack(buffer, block, block_size, buff_offset);
+    pack(&reader, block, block_size);
 
     protect(block, block_size_bytes, exponent, masks);
   }
 
-  fwrite((void *)&n_blocks, sizeof(long), 1, res);
-  fwrite((void *)&file_size, sizeof(long), 1, res);
-
-  fwrite(result, 1, n_blocks * block_size_bytes, res);
-
-  free(buffer);
-  free(result);
-
-  fclose(fd);
-  fclose(res);
+  free_buffered_reader(&reader);
+  free_buffered_writer(&writer);
 
   return NULL;
 }
@@ -94,19 +79,33 @@ void protect(void *block, uint32_t block_size_bytes, uint32_t exponent,
 }
 
 /**
+ * Puts informations bits in block, leaving space for protection bits.
  */
-int pack(void *buffer, void *block, uint32_t block_size, uint32_t buff_offset) {
-  int remaining = block_size - 2, start_from = buff_offset, start_to = 2,
-      size = 1;
+void pack(buffered_reader *br, void *block, uint32_t block_size) {
+  int remaining = block_size - 2, start_to = 2, size = 1;
+  bit_slice slice;
 
   while (remaining > 0) {
-    move(buffer, block, start_from, start_to, size);
+    if (!(slice = read(br, size)).base) {
+      return;
+    }
+    if (slice.size < size) {
+      uint64_t diff = size - slice.size;
+
+      move(slice.base, block, slice.bit_offset, start_to, slice.size);
+      slice = read(br, diff);
+
+      start_to += slice.size;
+
+      if (!(slice = read(br, diff)).base) {
+        return;
+      }
+    }
+
+    move(slice.base, block, slice.bit_offset, start_to, slice.size);
 
     remaining -= size + 1;
-    start_from += size;
     start_to += size + 1;
     size = (size << 1) + 1;
   }
-
-  return start_from;
 }

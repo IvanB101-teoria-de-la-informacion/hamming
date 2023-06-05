@@ -128,7 +128,11 @@ fn main() {
         }
     });
 
-    main_window.run().unwrap();
+    println!("hola");
+    if let Err(e) = main_window.run() {
+        println!("Error: {}", e.to_string());
+    }
+    println!("hola");
 }
 
 fn choose_file(valid_extentions: Vec<&str>) -> Option<String> {

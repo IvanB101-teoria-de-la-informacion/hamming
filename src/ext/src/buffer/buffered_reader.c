@@ -1,5 +1,6 @@
 #include "buffer.h"
 
+#include "../bitarr/bitarr.h"
 #include "../common/common.h"
 
 #include <stdint.h>
@@ -22,6 +23,14 @@ void init_buffered_reader(buffered_reader *br, char *path) {
 void free_buffered_reader(buffered_reader *br) {
   fclose(br->file);
   free((void *)br->buffer);
+}
+
+void rewind_reader(buffered_reader *br) {
+  rewind(br->file);
+
+  br->index = 0;
+  br->last = 0;
+  br->read_bits = 0;
 }
 
 bit_slice read(buffered_reader *br, uint64_t amount) {
@@ -47,4 +56,28 @@ bit_slice read(buffered_reader *br, uint64_t amount) {
   br->index += slice.size;
 
   return slice;
+}
+
+int read_bytes(buffered_reader *br, void *buffer, uint64_t size) {
+  uint64_t remaining = br->file_size - br->read_bits,
+           buf_remaining = br->last - br->index, start_to = 0;
+
+  if (!remaining && !buf_remaining) {
+    return -1;
+  }
+  if (size * 8 > buf_remaining) {
+    move(br->buffer, buffer, br->index, start_to, buf_remaining);
+    start_to = buf_remaining;
+    size -= buf_remaining / 8;
+
+    br->last = fread(br->buffer, 1, BUFFER_SIZE, br->file) * 8;
+    br->index = 0;
+    br->read_bits += br->last;
+  }
+
+  move(br->buffer, buffer, br->index, start_to, size * 8);
+
+  br->index += size * 8;
+
+  return 0;
 }
