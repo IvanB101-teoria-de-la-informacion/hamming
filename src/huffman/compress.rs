@@ -43,7 +43,7 @@ pub fn compress(path: &str) -> Result<()> {
     let mut rem_buf = 0;
     let buf_bits = BUFF_SIZE * 8;
 
-    let encoder = Encoder::new(&mut reader)?;
+    let encoder = Encoder::new(&mut reader, file_size)?;
 
     write_u64(&mut writer, &file_size)?;
     encoder.write_to_file(&mut writer)?;
@@ -74,7 +74,7 @@ pub fn compress(path: &str) -> Result<()> {
 }
 
 impl Encoder {
-    fn new(reader: &mut BufReader<File>) -> Result<Encoder> {
+    fn new(reader: &mut BufReader<File>, file_size: u64) -> Result<Encoder> {
         let mut info_arr: Vec<Vec<CharInfo>> = Vec::new();
         let mut table = Vec::with_capacity(CARD_ORIG);
         let mut counter: Vec<u8> = Vec::from([0; 1].repeat(CARD_ORIG));
@@ -94,7 +94,7 @@ impl Encoder {
                 info_arr[0].push(CharInfo {
                     orig: i as u8,
                     code: Vec::new(),
-                    prob: (counter[i] as f64) / (distinct as f64),
+                    prob: (counter[i] as f64) / (file_size as f64),
                 })
             }
         }
