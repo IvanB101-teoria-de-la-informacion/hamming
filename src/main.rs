@@ -75,31 +75,25 @@ fn main() {
         handle_compress(errors_copy.clone());
     });
 
-    let errors_copy = errors.clone();
     main_window.global::<State>().on_decompress(move || {
-        handle_decompress(errors_copy.clone());
+        handle_decompress(errors.clone());
     });
 
-    let orig_copy = orig_text.clone();
-    let stat_copy = stat.clone();
-    let huffman_copy = huffman_stats.clone();
-    let hamming_copy = hamming_stats.clone();
-    let table_copy = huffman_table.clone();
     main_window
         .global::<State>()
         .on_choose_file(move |operation| match operation.to_string().as_str() {
             "show" => {
-                if let Err(e) = handle_show_file(orig_copy.clone()) {
+                if let Err(e) = handle_show_file(orig_text.clone(), proc_text.clone()) {
                     // TODO
                     println!("{}", e);
                 }
             }
             "stats" => {
                 if let Err(e) = handle_statistics(
-                    stat_copy.clone(),
-                    hamming_copy.clone(),
-                    huffman_copy.clone(),
-                    table_copy.clone(),
+                    stat.clone(),
+                    hamming_stats.clone(),
+                    huffman_stats.clone(),
+                    huffman_table.clone(),
                 ) {
                     // TODO handling
                     println!("{}", e);
@@ -178,35 +172,47 @@ fn handle_decompress(errors: Rc<VecModel<SharedString>>) {
     }
 }
 
-fn handle_show_file(orig_text: Rc<VecModel<SharedString>>) -> Result<(), std::io::Error> {
-    let valid_extentions = [
-        "txt", "doc", "docx", "DE1", "DE2", "DE3", "DC1", "DC2", "DC3",
-    ]
-    .into();
-    let error_extensions = ["HE1", "HE2", "HE3"];
+fn handle_show_file(
+    orig_text: Rc<VecModel<SharedString>>,
+    proc_text: Rc<VecModel<SharedString>>,
+) -> Result<(), std::io::Error> {
+    let valid_extentions = ["dhu", "DE1", "DE2", "DE3", "DC1", "DC2", "DC3"].into();
 
     let path = match choose_file(valid_extentions) {
         Some(val) => val,
         None => return Ok(()),
     };
 
+    let mut orig_extentions = hamming::encoder::VALID_EXTENTIONS.to_vec();
+    orig_extentions.extend_from_slice(huffman::compress::VALID_EXTENTIONS.to_vec().as_slice());
+
+    let mut new_orig_text: Vec<SharedString> = Vec::new();
+    while let Some(ext) = orig_extentions.pop() {
+        if let Ok(mut file) = File::open(&path.with_extention(ext)) {
+            let mut buffer = Vec::new();
+
+            file.read_to_end(&mut buffer)?;
+
+            let contents = String::from_utf8_lossy(&buffer).to_string();
+
+            new_orig_text.push(contents.into());
+        }
+    }
+
     let mut file = File::open(&path).unwrap();
 
-    if let Some(_index) = error_extensions.iter().position(|&x| path.has_extention(x)) {
-        // TODO Return Vec<String> with errors
-    } else {
-        let mut new_file_text: Vec<SharedString> = Vec::new();
-        let mut buffer = Vec::new();
+    let mut new_proc_text: Vec<SharedString> = Vec::new();
+    let mut buffer = Vec::new();
 
-        file.read_to_end(&mut buffer)?;
+    file.read_to_end(&mut buffer)?;
 
-        let contents = String::from_utf8_lossy(&buffer).to_string();
+    let contents = String::from_utf8_lossy(&buffer).to_string();
 
-        new_file_text.push(contents.into());
-        new_file_text.push("Err1".into());
+    new_proc_text.push(contents.into());
+    new_proc_text.push("".into());
 
-        orig_text.set_vec(new_file_text);
-    }
+    proc_text.set_vec(new_proc_text);
+    orig_text.set_vec(new_orig_text);
 
     Ok(())
 }
