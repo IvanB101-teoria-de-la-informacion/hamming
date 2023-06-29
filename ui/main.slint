@@ -1,10 +1,7 @@
 import { Compare } from "./files/compare.slint";
-import { Corrupt } from "./operations/corrupt.slint";
-import { Compress } from "./operations/compress.slint";
-import { Protect } from "./operations/protect.slint";
-import { Desprotect } from "./operations/desprotect.slint";
-import { Decompress } from "./operations/decompress.slint";
 import { Statistics } from "./operations/statistics.slint";
+import { Hamming } from "hamming.slint";
+import { Huffman } from "huffman.slint";
 import { HuffmanStats, HammingStats, HuffmanEntry } from "./operations/statistics.slint";
 import { State } from "state.slint";
 import { Button , TabWidget} from "std-widgets.slint";
@@ -35,42 +32,25 @@ component MainWindow inherits Window {
         spacing: 0;
         HorizontalLayout {
             spacing: 5px;
+            width: 100%;
+            height: 100%;
 
             MenuBar {
                 pantalla <=> active-tab;
             }
             HorizontalLayout {
                 spacing: 6px;
-                height: 100%;
-                width: 100%;
 
                 if active-tab == "Pantalla Principal" : Principal {}
 
-                if active-tab == "Proteger" : Protect {
+                if active-tab == "Hamming" : Hamming {
                     errors: errors;
                     inProgress: inProgress;
-                    file-text: orig-text;
-                    proc-text: proc-text;
                 }
-                if active-tab == "Desproteger" : Desprotect {
+                if active-tab == "Huffman" : Huffman {
                     errors: errors;
                     inProgress: inProgress;
-                    file-text: orig-text;
-                    proc-text: proc-text;
                 }
-                if active-tab == "Corromper" : Corrupt {
-                    file-text: orig-text;
-                    proc-text: proc-text;}
-
-                if active-tab == "Comprimir" : Compress {
-                    file-text: orig-text;
-                    proc-text: proc-text;}
-
-                if active-tab == "Descomprimir" : Decompress {
-                    file-text: orig-text;
-                    proc-text: proc-text;
-                }
-
                 if active-tab == "Comparar" : Compare {
                     file-text: orig-text;
                     proc-text: proc-text;

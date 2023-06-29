@@ -1,0 +1,38 @@
+import { ComboBox } from "std-widgets.slint";
+import { Protect } from "./operations/protect.slint";
+import { Corrupt } from "./operations/corrupt.slint";
+import { Desprotect } from "./operations/desprotect.slint";
+
+export component Hamming inherits Rectangle{
+    in-out property <[string]> errors;
+    in-out property <[bool]> inProgress;
+    
+    HorizontalLayout {
+        padding: 15px;
+        Text {
+            horizontal-alignment: center;
+            text: "HAMMING";
+            font-size: 20px;
+        }
+    }
+    GridLayout {
+        padding-top: 100px;
+        Row{
+            Protect {
+                error: errors[0];
+            }  
+        }
+    } 
+    HorizontalLayout {
+        alignment: center;
+        padding-top: 300px;
+        spacing: 250px;
+        Corrupt {
+            error: errors[2];
+        }
+        Desprotect {
+            error: errors[1];
+        }
+        
+    }
+}

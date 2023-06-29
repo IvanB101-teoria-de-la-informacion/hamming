@@ -3,34 +3,31 @@ import { comp, OpButton } from "common.slint";
 import { State } from "../state.slint";
 
 export component Decompress inherits Rectangle{
-    height: 100%;
-    width: 100%;
-    in-out property <[string]> proc-text;
-    in-out property <[string]> file-text;
+    in-out property <string> error: "";
+    
     HorizontalLayout {
         padding: 15px;
         Text {
             horizontal-alignment: center;
-            text: "Descomprimir";
+            text: "DESCOMPRIMIR";
             font-size: 18px;
         }
     }
     HorizontalLayout{
         alignment: center;
-        padding-top: 50px;
-        OpButton {
+        padding-top: 70px;
+        b:=OpButton {
             text: "Elegir Archivo";
-            clicked => { State.decompress() }
+            clicked => { State.decompress()}
         }
-    }
-    VerticalLayout {
-        padding-top: 80px;
-        padding-bottom: 15px;
-        padding-left: 15px;
-        padding-right: 15px;
-        comp{
-            file-text: file-text;
-            proc-text: proc-text;
+
+        if error!="": VerticalLayout{
+            padding-top: 10px;
+            Text{
+                text: error;
+            } 
         }
-    }    
+    }  
+    
+     
 }

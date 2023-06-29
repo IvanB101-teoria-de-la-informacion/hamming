@@ -1,0 +1,33 @@
+import { ComboBox } from "std-widgets.slint";
+import { Compress } from "./operations/compress.slint";
+import { Decompress } from "./operations/decompress.slint";
+
+export component Huffman inherits Rectangle{
+    in-out property <[string]> errors;
+    in-out property <[bool]> inProgress;
+    
+    HorizontalLayout {
+        padding: 15px;
+        Text {
+            horizontal-alignment: center;
+            text: "HUFFMAN";
+            font-size: 20px;
+        }
+    }
+    GridLayout {
+        padding-top: 100px;
+        Row{
+            Compress {
+                error: errors[3];
+            }  
+        }
+    } 
+    GridLayout {
+        padding-top: 250px;
+        Row{
+            Decompress {
+                error: errors[4];
+            }
+        }
+    }
+}

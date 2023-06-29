@@ -23,8 +23,9 @@ export component Statistics inherits Rectangle {
     in-out property <HammingStats> hamming-stats;
     in-out property <HuffmanStats> huffman-stats;
     in-out property <[HuffmanEntry]> huffman-table;
-    height: 100%;
     width: 100%;
+    HorizontalLayout {
+        alignment: center;
 HorizontalLayout {
         padding: 15px;
         Text {
@@ -145,4 +146,6 @@ HorizontalLayout {
             
         }
     }
+    }
+    
 }

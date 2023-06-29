@@ -3,18 +3,20 @@ import { comp, OpButton } from "common.slint";
 import { State } from "../state.slint";
 
 export component Corrupt inherits Rectangle {
+    in-out property <string> error;
+    in-out property <[bool]> inProgress;
 
-    in-out property <[string]> proc-text;
-    in-out property <[string]> file-text;
-    height: 100%;
-    width: 100%;
     HorizontalLayout {
         padding: 15px;
         alignment: center;
         Text {
-            text: "Corromper:   ";
+            text: "CORROMPER";
             font-size: 18px;
         }
+    }
+    HorizontalLayout {
+        padding: 50px;
+        alignment: center;
         Text{
             text: "Ingresar las probabilidades";
             font-size: 18px;
@@ -23,11 +25,15 @@ export component Corrupt inherits Rectangle {
     HorizontalLayout {
         spacing: 10px;
         alignment: center;
-        padding-top: 50px;
-        Text{
-            text: "Primer error";
-            font-size: 14px;
+        padding-top: 120px;
+        VerticalLayout {
+        padding-top: 8px;
+            Text{
+                text: "Primer error";
+                font-size: 14px;
+            }
         }
+        
         p1:=LineEdit {
             width: 100px;
             height: 30px;
@@ -35,10 +41,15 @@ export component Corrupt inherits Rectangle {
             text: 0.2;
             edited => {State.probability1=p1.text.to-float()}
         }
-        Text{
-            text: "Segundo error";
-            font-size: 14px;
+
+        VerticalLayout {
+        padding-top: 8px;
+            Text{
+                text: "Segundo error";
+                font-size: 14px;
+            }
         }
+        
         p2:=LineEdit {
             width: 100px;
             height: 30px;
@@ -50,23 +61,39 @@ export component Corrupt inherits Rectangle {
             padding: 10px;
             if(((p1.text.to-float()+p2.text.to-float())>1) || ((p1.text.to-float()+p2.text.to-float())<0)): Text {
                 text: "La suma debe ser menor igual a uno y mayor a cero";
+                color: red;
                 font-size: 14px;
             }
-        }
-        if(((p1.text.to-float()+p2.text.to-float())<=1) && ((p1.text.to-float()+p2.text.to-float())>=0)): OpButton {
-            text: "Elegir Archivo";
-            clicked => { State.corrupt(State.probability1, State.probability2);
+        }   
+    }
+
+    HorizontalLayout {
+        alignment: center;
+        padding-top: 200px;
+        if(p1.text.to-float()<0 || p2.text.to-float()<0): Text {
+                text: "Las probabilidades deben ser positivas";
+                font-size: 14px;
+                color: red;
+            }
+    }
+    
+    HorizontalLayout {
+        alignment: center;
+        padding-top: 220px;
+        if(((p1.text.to-float()+p2.text.to-float())<=1) && ((p1.text.to-float()+p2.text.to-float())>=0) && !(p1.text.to-float()<0 || p2.text.to-float()<0)): VerticalLayout {
+            
+            b:=OpButton{
+                text: "Elegir Archivo";
+                clicked => { State.corrupt(State.probability1, State.probability2);
+            }}
+            
+            if error!="": VerticalLayout{
+                padding-top: 10px;
+                Text{
+                    text: error;
+                } 
             }
         }
-    }    
-    VerticalLayout {
-        padding-top: 80px;
-        padding-bottom: 15px;
-        padding-left: 15px;
-        padding-right: 15px;
-        comp{
-            file-text: file-text;
-            proc-text: proc-text;
-        }
-    } 
+        
+    }
 }
