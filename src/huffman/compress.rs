@@ -14,7 +14,7 @@ use crate::{
 use super::BUFF_SIZE;
 
 pub const VALID_EXTENTIONS: [&str; 3] = ["txt", "doc", "docx"];
-pub const EXTENTION: &str = "huf";
+pub const EXTENTION: [&str; 1] = ["huf"];
 const CARD_ORIG: usize = 128;
 
 #[derive(Default, Clone, Debug)]
@@ -37,7 +37,7 @@ pub fn compress(path: &str) -> Result<()> {
     let fd = File::open(path)?;
     let file_size = fd.metadata()?.len();
     let mut reader = BufReader::new(fd);
-    let mut writer = BufWriter::new(File::create(path.with_extention(EXTENTION))?);
+    let mut writer = BufWriter::new(File::create(path.with_extention(EXTENTION[0]))?);
 
     let mut buffer = [0].repeat(BUFF_SIZE);
     let mut rem_buf = 0;
@@ -77,7 +77,7 @@ impl Encoder {
     fn new(reader: &mut BufReader<File>, file_size: u64) -> Result<Encoder> {
         let mut info_arr: Vec<Vec<CharInfo>> = Vec::new();
         let mut table = Vec::with_capacity(CARD_ORIG);
-        let mut counter: Vec<u8> = Vec::from([0; 1].repeat(CARD_ORIG));
+        let mut counter: Vec<u32> = Vec::from([0; 1].repeat(CARD_ORIG));
         let mut distinct: u32 = 0;
 
         while let Some(Ok(val)) = reader.bytes().next() {

@@ -27,14 +27,13 @@ component MainWindow inherits Window {
 
     in-out property <string> active-tab : "Pantalla Principal";
 
-    min-width: 1000px;
-    min-height: 800px;
+    min-height: 1000px;
+    min-width: 1200px;
 
     padding: 0;
     VerticalLayout {
         spacing: 0;
         HorizontalLayout {
-            height: 100%;
             spacing: 5px;
 
             MenuBar {
@@ -42,25 +41,40 @@ component MainWindow inherits Window {
             }
             HorizontalLayout {
                 spacing: 6px;
+                height: 100%;
+                width: 100%;
 
                 if active-tab == "Pantalla Principal" : Principal {}
 
                 if active-tab == "Proteger" : Protect {
                     errors: errors;
                     inProgress: inProgress;
+                    file-text: orig-text;
+                    proc-text: proc-text;
                 }
                 if active-tab == "Desproteger" : Desprotect {
                     errors: errors;
                     inProgress: inProgress;
+                    file-text: orig-text;
+                    proc-text: proc-text;
                 }
-                if active-tab == "Corromper" : Corrupt {}
+                if active-tab == "Corromper" : Corrupt {
+                    file-text: orig-text;
+                    proc-text: proc-text;}
 
-                if active-tab == "Comprimir" : Compress {}
+                if active-tab == "Comprimir" : Compress {
+                    file-text: orig-text;
+                    proc-text: proc-text;}
 
-                if active-tab == "Descomprimir" : Decompress {}
+                if active-tab == "Descomprimir" : Decompress {
+                    file-text: orig-text;
+                    proc-text: proc-text;
+                }
 
                 if active-tab == "Comparar" : Compare {
                     file-text: orig-text;
+                    proc-text: proc-text;
+
                 }
                 if active-tab == "stats" : Statistics {
                     stat : stat[0];

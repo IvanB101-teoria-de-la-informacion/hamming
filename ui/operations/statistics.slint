@@ -1,5 +1,6 @@
 import { State } from "../state.slint";
 import { OpButton } from "common.slint";
+import { ListView } from "std-widgets.slint";
 
 export struct HuffmanEntry {
     orig: string,
@@ -22,50 +23,121 @@ export component Statistics inherits Rectangle {
     in-out property <HammingStats> hamming-stats;
     in-out property <HuffmanStats> huffman-stats;
     in-out property <[HuffmanEntry]> huffman-table;
-
-    VerticalLayout {
+    height: 100%;
+    width: 100%;
+HorizontalLayout {
+        padding: 15px;
+        Text {
+            padding-top: 10px;
+            horizontal-alignment: center;
+            text: "Estadisticas";
+            font-size: 16px;
+        }
+    }
+    HorizontalLayout {
+        alignment: center;
+        padding-top: 50px;
         OpButton {
             text: "Elegir Archivo";
             clicked => { State.choose_file("stats") }
         }
         if stat == "" : Text {
-            text: "Select a file";
+            text: "Debe seleccionar un archivo";
+            font-size: 16px;
+            padding-left: 5px;
+
         }
+    }
+    VerticalLayout {
+        padding-top: 80px;
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+        
         if stat == "hamming" : VerticalLayout {
+            spacing: 5px;
             Text {
+            padding-top: 5px;
                 text: "Hamming";
+                horizontal-alignment: center;
+            font-size: 16px;
+
             }
             Text {
                 text: "Info bits: " + hamming-stats.info-bits;
+            padding-top: 5px;
+                horizontal-alignment: center;
+            font-size: 16px;
+
             }
             Text {
                 text: "Filler bits: " + hamming-stats.filler-bits;
+            padding-top: 5px;
+                horizontal-alignment: center;
+            font-size: 16px;
+
             }
             Text {
                 text: "Protection bits: " + hamming-stats.protection-bits;
+            padding-top: 5px;
+                horizontal-alignment: center;
+            font-size: 16px;
+
             }
         }
         if stat == "huffman" : VerticalLayout {
+            spacing: 10px;
+            padding-bottom: 10px;
+
             Text {
                 text: "Huffman";
+                horizontal-alignment: center;
+            font-size: 16px;
+
             }
             Text {
+            font-size: 16px;
+            padding-top: 5px;
+                horizontal-alignment: center;
                 text: "Original size: " + huffman-stats.orig-size;
             }
             Text {
+            padding-top: 5px;
+            font-size: 16px;
+                horizontal-alignment: center;
                 text: "Compressed size: " + huffman-stats.comp-size;
             }
-            for entry in huffman-table : HorizontalLayout {
-                Text {
-                    text: "Original: " + entry.orig;
-                }
-                Text {
-                    text: "Probability: " + entry.prob;
-                }
-                Text {
-                    text: "Comprimido: " + entry.code;
-                }
-            }
+            ListView { 
+                width: 100%;
+                height: 100%;
+                padding-bottom: 10px;
+                padding-top: 10px;
+                for entry in huffman-table : Rectangle {
+                    border-color: lightgray;
+                    border-width: 1px;
+                    HorizontalLayout {
+                        padding: 5px;
+                    
+                            Text {
+                                font-size: 16px;
+                                padding: 5px;
+                                text: "Original: " + entry.orig;
+                            }
+                            Text {
+                                padding: 5px;
+                        font-size: 16px;
+                                text: "Probabilidad: " + entry.prob;
+                            }
+                            Text {
+                                padding: 5px;
+                        font-size: 16px;
+                                text: "Comprimido: " + entry.code;
+                            }
+                        }
+                    }
+                    
+             }
+            
         }
     }
 }

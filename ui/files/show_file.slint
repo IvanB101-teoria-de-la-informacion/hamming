@@ -2,33 +2,24 @@ import { ScrollView , ListView, Button } from "std-widgets.slint";
 import { State } from "../state.slint";
 
 export component ShowFile inherits Rectangle {
-    in property <[string]> file_text : ["", "", ""];
+    in property <[string]> file_text;
+
+    in property <int> option;
+
+    border-color: lightgray;
+    border-width: 1.5px;
+
+    width: 1200px;
+    height: 400px;
 
     VerticalLayout {
-        spacing: 20px;
-        width: 100%;
-
         HorizontalLayout {
         ListView { 
-            padding-left: 10px;
-            min-width: 500px;
             for data in [
                 {text : file-text},
             ] : VerticalLayout {
                 Text {
                     text: file-text[0];
-                    wrap: word-wrap;
-                    font-size: 14px; 
-                }
-                Text {
-                    color: red;
-                    text: file-text[1];
-                    wrap: word-wrap;
-                    font-size: 14px; 
-                }
-                Text {
-                    color: red;
-                    text: file-text[2];
                     wrap: word-wrap;
                     font-size: 14px; 
                 }

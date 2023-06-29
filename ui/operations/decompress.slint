@@ -3,6 +3,10 @@ import { comp, OpButton } from "common.slint";
 import { State } from "../state.slint";
 
 export component Decompress inherits Rectangle{
+    height: 100%;
+    width: 100%;
+    in-out property <[string]> proc-text;
+    in-out property <[string]> file-text;
     HorizontalLayout {
         padding: 15px;
         Text {
@@ -24,6 +28,9 @@ export component Decompress inherits Rectangle{
         padding-bottom: 15px;
         padding-left: 15px;
         padding-right: 15px;
-        comp{}
+        comp{
+            file-text: file-text;
+            proc-text: proc-text;
+        }
     }    
 }

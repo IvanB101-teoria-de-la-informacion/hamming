@@ -5,6 +5,11 @@ import { State } from "../state.slint";
 export component Protect inherits Rectangle{
     in-out property <[string]> errors;
     in-out property <[bool]> inProgress;
+    in-out property <[string]> proc_text;
+    in-out property <[string]> file_text;
+
+    height: 100%;
+    width: 100%;
 
     HorizontalLayout {
         padding: 15px;
@@ -34,18 +39,17 @@ export component Protect inherits Rectangle{
         }
         OpButton {
             text: "Elegir Archivo";
-            clicked => { State.protect(combo-box.current-value) }
-        }
-        if errors[0] != "" : Text {
-            text: errors[0];
+            clicked => { State.protect(combo-box.current-value);}
         }
     }
-    
     VerticalLayout {
         padding-top: 80px;
         padding-bottom: 15px;
         padding-left: 15px;
         padding-right: 15px;
-        comp{}
+        comp{
+            file-text: file-text;
+            proc-text: proc-text;
+        }
     } 
 }

@@ -11,7 +11,7 @@ use crate::util::string::Extention;
 use super::compress::Encoder;
 
 pub const VALID_EXTENTIONS: [&str; 1] = ["huf"];
-const EXTENTION: &str = "dhu";
+pub const EXTENTION: [&str; 1] = ["dhu"];
 
 #[derive(Debug)]
 struct Node {
@@ -30,7 +30,7 @@ pub fn decompress(path: &str) -> Result<()> {
     }
 
     let mut reader = BufReader::new(File::open(&path)?);
-    let mut res_fd = File::create(path.with_extention(EXTENTION))?;
+    let mut res_fd = File::create(path.with_extention(EXTENTION[0]))?;
     let mut writer = BufWriter::new(&mut res_fd);
 
     let mut file_size = 0;

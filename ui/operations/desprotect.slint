@@ -5,6 +5,10 @@ import { State } from "../state.slint";
 export component Desprotect inherits Rectangle{
     in-out property <[string]> errors;
     in-out property <[bool]> inProgress;
+    in-out property <[string]> proc-text;
+    in-out property <[string]> file-text;
+    height: 100%;
+    width: 100%;
 
     HorizontalLayout {
         padding: 15px;
@@ -39,6 +43,9 @@ export component Desprotect inherits Rectangle{
         padding-bottom: 15px;
         padding-left: 15px;
         padding-right: 15px;
-        comp{}
+        comp{
+            file-text: file-text;
+            proc-text: proc-text;
+        }
     } 
 }

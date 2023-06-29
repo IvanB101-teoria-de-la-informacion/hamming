@@ -3,15 +3,43 @@ import { State } from "../state.slint";
 import { ShowFile } from "./show_file.slint";
 
 export component Compare inherits Rectangle {
-    in property <[string]> file-text;
-
-    VerticalLayout {
+    in-out property <[string]> proc-text;
+    in-out property <[string]> file-text;
+    
+            height: 100%;
+            width: 100%;
+HorizontalLayout {
+        padding: 15px;
+        Text {
+            horizontal-alignment: center;
+            text: "Comparar";
+            font-size: 18px;
+        }
+    }
+    HorizontalLayout {
+        alignment: center;
+        padding-top: 50px;
+        padding-bottom: 50px;
         OpButton {
             text: "Elegir Archivo";
             clicked => { State.choose_file("show") }
-        }
+        }}
+    HorizontalLayout {
+        padding-top: 100px;
+        spacing: 15px;
+            alignment: center;
         ShowFile {
+            width: 600px;
+            height: 700px;
             file-text: file-text;
+            padding-right: 5px;
         }
+
+        ShowFile {
+            width: 600px;
+            height: 700px;
+            file-text: proc-text;
+        }
+        
     }
 }
