@@ -11,7 +11,7 @@ use crate::util::string::Extention;
 use super::compress::Encoder;
 
 pub const VALID_EXTENTIONS: [&str; 1] = ["huf"];
-pub const EXTENTION: [&str; 1] = ["dhu"];
+pub const EXTENTIONS: [&str; 1] = ["dhu"];
 
 #[derive(Debug)]
 struct Node {
@@ -30,7 +30,7 @@ pub fn decompress(path: &str) -> Result<()> {
     }
 
     let mut reader = BufReader::new(File::open(&path)?);
-    let mut res_fd = File::create(path.with_extention(EXTENTION[0]))?;
+    let mut res_fd = File::create(path.with_extention(EXTENTIONS[0]))?;
     let mut writer = BufWriter::new(&mut res_fd);
 
     let mut file_size = 0;
@@ -61,8 +61,8 @@ pub fn decompress(path: &str) -> Result<()> {
                     }
                 }
             } else {
-                println!("Error en decodificacion");
-                break;
+                // println!("Error en decodificacion");
+                anchor = &tree.root;
             }
             mask >>= 1;
         }
@@ -71,6 +71,16 @@ pub fn decompress(path: &str) -> Result<()> {
     res_fd.set_len(file_size)?;
 
     Ok(())
+}
+
+impl Node {
+    fn new(val: u8) -> Node {
+        Node {
+            val,
+            right: None,
+            left: None,
+        }
+    }
 }
 
 impl DecodingTree {
@@ -87,26 +97,25 @@ impl DecodingTree {
             let mut anchor = &mut root;
             let mut mask = 1 << 7;
             for i in 0..(len + 1) {
+                if i % 8 == 0 {
+                    mask = 1 << 7;
+                }
+                if i == len {
+                    *anchor = Some(Box::new(Node::new(orig)));
+                    break;
+                }
                 match { anchor } {
                     &mut Some(ref mut node) => {
-                        anchor = if code[(i / 8) as usize] & (mask) != 0 {
+                        anchor = if code[(i / 8) as usize] & mask != 0 {
                             &mut node.right
                         } else {
                             &mut node.left
                         }
                     }
                     other => {
-                        *other = Some(Box::new(Node {
-                            val: 0,
-                            right: None,
-                            left: None,
-                        }));
-                        if i == len {
-                            other.as_mut().unwrap().val = orig;
-                            break;
-                        }
+                        *other = Some(Box::new(Node::new(0)));
                         if let &mut Some(ref mut node) = other {
-                            anchor = if code[(i / 8) as usize] & (mask) != 0 {
+                            anchor = if code[(i / 8) as usize] & mask != 0 {
                                 &mut node.right
                             } else {
                                 &mut node.left

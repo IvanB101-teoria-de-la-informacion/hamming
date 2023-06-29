@@ -53,15 +53,15 @@ pub fn compress(path: &str) -> Result<()> {
         let (len, code) = &table[byte as usize];
 
         if buf_bits - rem_buf < *len as usize {
-            let mut dif = buf_bits - rem_buf;
-            buffer.put(code, rem_buf as usize, 0, dif);
+            let dif = buf_bits - rem_buf;
+            buffer.put(code, rem_buf, 0, dif);
 
             writer.write_all(&mut buffer)?;
             rem_buf = 0;
 
-            dif = *len as usize - dif;
-            buffer.put(code, rem_buf, 0, dif);
-            rem_buf += dif
+            let rem = *len as usize - dif;
+            buffer.put(code, rem_buf, dif, rem);
+            rem_buf += rem;
         } else {
             buffer.put(code, rem_buf, 0, *len as usize);
 
@@ -77,7 +77,7 @@ impl Encoder {
     fn new(reader: &mut BufReader<File>, file_size: u64) -> Result<Encoder> {
         let mut info_arr: Vec<Vec<CharInfo>> = Vec::new();
         let mut table = Vec::with_capacity(CARD_ORIG);
-        let mut counter: Vec<u32> = Vec::from([0; 1].repeat(CARD_ORIG));
+        let mut counter = [0; CARD_ORIG];
         let mut distinct: u32 = 0;
 
         while let Some(Ok(val)) = reader.bytes().next() {

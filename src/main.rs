@@ -54,49 +54,37 @@ fn main() {
     main_window.set_huffman_table(huffman_table.clone().into());
 
     let errors_copy = errors.clone();
-    let orig_copy = orig_text.clone();
-    let proc_copy = proc_text.clone();
     main_window.global::<State>().on_protect(move |value| {
-        handle_protect(value, errors_copy.clone(), &masks, orig_copy.clone(), proc_copy.clone() );
+        handle_protect(value, errors_copy.clone(), &masks);
     });
 
     let errors_copy = errors.clone();
-    let orig_copy = orig_text.clone();
-    let proc_copy = proc_text.clone();
     main_window.global::<State>().on_desprotect(move |correct| {
-        handle_desprotect(correct, errors_copy.clone(), &masks, orig_copy.clone(), proc_copy.clone());
+        handle_desprotect(correct, errors_copy.clone(), &masks);
     });
 
     let errors_copy = errors.clone();
-    let orig_copy = orig_text.clone();
-    let proc_copy = proc_text.clone();
     main_window
         .global::<State>()
         .on_corrupt(move |prob1, prob2| {
-            handle_corrupt(errors_copy.clone(), orig_copy.clone(), proc_copy.clone(), prob1, prob2);
+            handle_corrupt(errors_copy.clone(), prob1, prob2);
         });
 
     let errors_copy = errors.clone();
-    let orig_copy = orig_text.clone();
-    let proc_copy = proc_text.clone();
     main_window.global::<State>().on_compress(move || {
-        handle_compress(errors_copy.clone(), orig_copy.clone(), proc_copy.clone());
+        handle_compress(errors_copy.clone());
     });
 
     let errors_copy = errors.clone();
-    let orig_copy = orig_text.clone();
-    let proc_copy = proc_text.clone();
     main_window.global::<State>().on_decompress(move || {
-        handle_decompress(errors_copy.clone(), orig_copy.clone(), proc_copy.clone());
+        handle_decompress(errors_copy.clone());
     });
 
-    let orig_copy = orig_text.clone();
-    let proc_copy = proc_text.clone();
     main_window
         .global::<State>()
-        .on_choose_file(move |operation| match operation.to_string().as_str() {
+        .on_choose_file(move |operation| match operation.as_str() {
             "show" => {
-                if let Err(e) = handle_show_file(orig_copy.clone(), proc_copy.clone(), "".to_string(), Vec::new()) {
+                if let Err(e) = handle_show_file(orig_text.clone(), proc_text.clone()) {
                     // TODO
                     println!("{}", e);
                 }
@@ -121,11 +109,11 @@ fn main() {
 fn handle_protect(
     value: SharedString,
     errors: Rc<VecModel<SharedString>>,
-    masks: &[[u8; MAX_BLOCK_SIZE]; MAX_EXPONENT], orig_text: Rc<VecModel<SharedString>>,
-    proc_text: Rc<VecModel<SharedString>>)-> Result<(), std::io::Error> {
+    masks: &[[u8; MAX_BLOCK_SIZE]; MAX_EXPONENT],
+) {
     let path = match choose_file(hamming::encoder::VALID_EXTENTIONS.into()) {
         Some(val) => val,
-        None => return Ok(()),
+        None => return,
     };
 
     let block_size = value.parse().unwrap();
@@ -133,143 +121,73 @@ fn handle_protect(
     if let Err(e) = hamming::encoder::encode(&path, block_size, &masks) {
         errors.set_row_data(0, e.to_string().into());
     }
-
-    println!("{}", path);
-
-    if let Err(e) =  handle_show_file(orig_text.to_owned(), proc_text.to_owned(), path, hamming::encoder::EXTENTIONS.into()) {
-                    // TODO
-                    println!("{}", e);
-    }
-
-    Ok(())
 }
 
 fn handle_desprotect(
     correct: bool,
     errors: Rc<VecModel<SharedString>>,
-    masks: &[[u8; MAX_BLOCK_SIZE]; MAX_EXPONENT], orig_text: Rc<VecModel<SharedString>>,
-    proc_text: Rc<VecModel<SharedString>>)-> Result<(), std::io::Error>
-{
+    masks: &[[u8; MAX_BLOCK_SIZE]; MAX_EXPONENT],
+) {
     let path = match choose_file(hamming::decoder::VALID_EXTENTIONS.into()) {
         Some(val) => val,
-        None => return Ok(()),
+        None => return,
     };
 
     if let Err(e) = hamming::decoder::decode(&path, correct, masks) {
         errors.set_row_data(1, e.to_string().into());
     }
-
-    let mut extension = Vec::new();
-    println!("{}",path);
-    if path.has_extention("HA1") || path.has_extention("HA2") || path.has_extention("HA3") {
-        match path.chars().last().unwrap(){
-                '1'=>extension.push("DC1"),
-                '2'=>extension.push("DC2"),
-                '3'=>extension.push("DC3"),
-                _=>println!("Error de deteccion de archivo"),
-        }
-    }else{
-        if correct {
-            match path.chars().last().unwrap(){
-                '1'=>extension.push("DC1"),
-                '2'=>extension.push("DC2"),
-                '3'=>extension.push("DC3"),
-                _=>println!("Error de deteccion de archivo"),
-            }
-        }else{
-            match path.chars().last().unwrap(){
-                '1'=>extension.push("DE1"),
-                '2'=>extension.push("DE2"),
-                '3'=>extension.push("DE3"),
-                _=>println!("Error de deteccion de archivo"),
-            }
-        }
-    }
-
-    if let Err(e) =  handle_show_file(orig_text.to_owned(), proc_text.to_owned(), path, extension) {
-                    // TODO
-                    println!("{}", e);
-    }
-
-    Ok(())
 }
 
-fn handle_corrupt(errors: Rc<VecModel<SharedString>>, orig_text: Rc<VecModel<SharedString>>,
-    proc_text: Rc<VecModel<SharedString>>, prob1: f32, prob2: f32)-> Result<(), std::io::Error> {
+fn handle_corrupt(errors: Rc<VecModel<SharedString>>, prob1: f32, prob2: f32) {
     println!("Out: {}, {}", prob1, prob2);
     let path = match choose_file(hamming::noise::VALID_EXTENTIONS.into()) {
         Some(val) => val,
-        None => return Ok(()),
+        None => return,
     };
 
     // TODO siempre recibe probabilidades 0 de la GUI
     if let Err(e) = hamming::noise::corrupt(&path, 0.3, 0.1) {
         errors.set_row_data(2, e.to_string().into());
     }
-
-    if let Err(e) =  handle_show_file(orig_text.to_owned(), proc_text.to_owned(), path, hamming::noise::EXTENTIONS.into()) {
-                    // TODO
-                    println!("{}", e);
-    }
-
-    Ok(())
 }
 
-fn handle_compress(errors: Rc<VecModel<SharedString>>, orig_text: Rc<VecModel<SharedString>>,
-    proc_text: Rc<VecModel<SharedString>>)-> Result<(), std::io::Error> {
+fn handle_compress(errors: Rc<VecModel<SharedString>>) {
     let path = match choose_file(huffman::compress::VALID_EXTENTIONS.into()) {
         Some(val) => val,
-        None => return Ok(()),
+        None => return,
     };
 
     if let Err(e) = huffman::compress::compress(&path) {
         errors.set_row_data(3, e.to_string().into());
     }
-
-    if let Err(e) =  handle_show_file(orig_text.to_owned(), proc_text.to_owned(), path, huffman::compress::EXTENTION.into()) {
-                    // TODO
-                    println!("{}", e);
-    }
-
-    Ok(())
 }
 
-fn handle_decompress(errors: Rc<VecModel<SharedString>>, orig_text: Rc<VecModel<SharedString>>,
-    proc_text: Rc<VecModel<SharedString>>)-> Result<(), std::io::Error> {
+fn handle_decompress(errors: Rc<VecModel<SharedString>>) {
     let path = match choose_file(huffman::decompress::VALID_EXTENTIONS.into()) {
         Some(val) => val,
-        None => return Ok(()),
+        None => return,
     };
 
     if let Err(e) = huffman::decompress::decompress(&path) {
         errors.set_row_data(4, e.to_string().into());
     }
-    
-    if let Err(e) =  handle_show_file(orig_text.to_owned(), proc_text.to_owned(), path, huffman::decompress::EXTENTION.into()) {
-                    // TODO
-                    println!("{}", e);
-    }
-
-    Ok(())
 }
 
 fn handle_show_file(
     orig_text: Rc<VecModel<SharedString>>,
-    proc_text: Rc<VecModel<SharedString>>, mut path: String, mut valid_extentions: Vec<&str>
+    proc_text: Rc<VecModel<SharedString>>,
 ) -> Result<(), std::io::Error> {
-    if path == ""{
-        println!("entre");
-        valid_extentions = ["dhu", "DE1", "DE2", "DE3", "DC1", "DC2", "DC3"].into();
-        path = match choose_file(valid_extentions) {
-            Some(val) => val,
-            None => return Ok(()),
-        };
-    
-    }
+    let mut proc_extentions = hamming::decoder::EXTENTIONS.to_vec();
+    proc_extentions.extend_from_slice(huffman::decompress::EXTENTIONS.to_vec().as_slice());
 
     let mut orig_extentions = hamming::encoder::VALID_EXTENTIONS.to_vec();
     orig_extentions.extend_from_slice(huffman::compress::VALID_EXTENTIONS.to_vec().as_slice());
-    
+
+    let path = match choose_file(proc_extentions.clone()) {
+        Some(val) => val,
+        None => return Ok(()),
+    };
+
     let mut new_orig_text: Vec<SharedString> = Vec::new();
     while let Some(ext) = orig_extentions.pop() {
         if let Ok(mut file) = File::open(&path.with_extention(ext)) {
@@ -284,12 +202,10 @@ fn handle_show_file(
     }
 
     let mut file = File::open(&path).unwrap();
-
     let mut new_proc_text: Vec<SharedString> = Vec::new();
     let mut buffer = Vec::new();
 
     file.read_to_end(&mut buffer)?;
-
     let contents = String::from_utf8_lossy(&buffer).to_string();
 
     new_proc_text.push(contents.into());
