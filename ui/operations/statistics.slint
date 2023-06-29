@@ -37,6 +37,7 @@ HorizontalLayout {
     HorizontalLayout {
         alignment: center;
         padding-top: 50px;
+        spacing: 15px;
         OpButton {
             text: "Elegir Archivo";
             clicked => { State.choose_file("stats") }
@@ -56,8 +57,10 @@ HorizontalLayout {
         
         if stat == "hamming" : VerticalLayout {
             spacing: 5px;
+            padding-bottom: 30px;
+            padding-top: 30px;
             Text {
-            padding-top: 5px;
+            padding-top: 15px;
                 text: "Hamming";
                 horizontal-alignment: center;
             font-size: 16px;
@@ -86,12 +89,14 @@ HorizontalLayout {
             }
         }
         if stat == "huffman" : VerticalLayout {
-            spacing: 10px;
+            spacing: 5px;
             padding-bottom: 10px;
+            padding-top: 15px;
 
             Text {
                 text: "Huffman";
                 horizontal-alignment: center;
+            padding-top: 15px;
             font-size: 16px;
 
             }

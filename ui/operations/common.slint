@@ -9,24 +9,36 @@ export component OpButton inherits Button {
 export component comp inherits Rectangle{
     in-out property <[string]> file-text;
     in-out property <[string]> proc-text;
-
     VerticalLayout {
-        spacing: 0px;
-        t:=Text{
-            text: "ORIGINAL";
-            font-size: 16px;
+        alignment: start;
+        HorizontalLayout {
+            alignment: center;
+            padding: 10px;
+            t:=Text{
+                text: "ORIGINAL";
+                font-size: 16px;
+            }
         }
-        ShowFile {
-            option: 0;
-            file-text: file-text;
+        HorizontalLayout {
+            alignment: center;
+            ShowFile {
+                file-text: file-text;
+            }
         }
-        p:=Text{
-            text: "PROCESADO";
-            font-size: 16px;
+        HorizontalLayout {
+            padding: 10px;
+            alignment: center;
+            p:=Text{
+                padding-top: 15px;
+                text: "PROCESADO";
+                font-size: 16px;
+            }
         }
-        ShowFile {
-            option: 1;
-            file-text: proc-text;
+        HorizontalLayout {
+            alignment: center;
+            ShowFile {
+                file-text: proc-text;
+            }
         }
     }
 }
