@@ -5,7 +5,7 @@ use std::io::{BufReader, BufWriter, Error, ErrorKind, Read, Write};
 
 use super::{BLOCK_SIZES, EXPONENTS, MAX_BLOCK_SIZE, MAX_EXPONENT};
 
-pub const VALID_EXTENTIONS: [&str; 1] = ["txt"];
+pub const VALID_EXTENTIONS: [&str; 4] = ["txt", "huf", "doc", "docx"];
 pub const EXTENTIONS: [&str; 3] = ["HA1", "HA2", "HA3"];
 
 pub fn encode(

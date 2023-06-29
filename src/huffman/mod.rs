@@ -6,7 +6,7 @@ use std::{
     io::{BufReader, Result},
 };
 
-use crate::buffered::reader::read_u64;
+use crate::{buffered::reader::read_u64, util::bitarr::BitArr};
 
 use self::compress::Encoder;
 
@@ -41,14 +41,15 @@ pub fn get_info(path: &str) -> Result<HuffmanInfo> {
 
         let mut mask = 1 << 7;
         for i in 0..len {
+            if i % 8 == 0 {
+                mask = 1 << 7;
+            }
             if code[(i / 8) as usize] & mask != 0 {
                 aux.push('1');
             } else {
                 aux.push('0');
             }
-            if i % 8 == 0 {
-                mask = 1 << 7;
-            }
+            mask >>= 1;
         }
         table_size += (10 + if len % 8 == 0 { len / 8 } else { len / 8 + 1 }) as u32;
 

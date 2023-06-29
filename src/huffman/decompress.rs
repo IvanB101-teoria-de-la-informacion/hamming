@@ -10,7 +10,7 @@ use crate::util::string::Extention;
 
 use super::compress::Encoder;
 
-pub const VALID_EXTENTIONS: [&str; 1] = ["huf"];
+pub const VALID_EXTENTIONS: [&str; 4] = ["huf", "DC1", "DC2", "DC3"];
 pub const EXTENTIONS: [&str; 1] = ["dhu"];
 
 #[derive(Debug)]
